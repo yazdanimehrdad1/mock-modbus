@@ -1,0 +1,20 @@
+services:
+  mock-modbus:
+    build: .
+    container_name: mock-modbus
+    ports:
+      - "${MODBUS_PORT:-502}:502"
+    environment:
+      - MODBUS_HOST=0.0.0.0
+      - MODBUS_PORT=502
+      - MODBUS_UNIT_ID=${MODBUS_UNIT_ID:-1}
+      - DEFAULT_REGISTER_VALUE=${DEFAULT_REGISTER_VALUE:-0}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      # - RANDOM_SEED=1234  # uncomment for deterministic mode
+    networks:
+      - pae-shared-network
+    restart: unless-stopped
+
+networks:
+  pae-shared-network:
+    external: true
