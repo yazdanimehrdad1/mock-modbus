@@ -37,7 +37,7 @@ async def run_server() -> None:
     slave_context = ModbusDeviceContext(hr=hr_block, ir=ir_block)
 
     context = ModbusServerContext(
-        slaves={settings.modbus_unit_id: slave_context},
+        devices={settings.modbus_unit_id: slave_context},
         single=False,
     )
 
