@@ -38,20 +38,20 @@ class DynamicRegisterBlock(BaseModbusDataBlock):
                 result.append(self._default)
         return result
 
-    def setValues(self, address: int, values: Any) -> None:
+    def setValues(self, _address: int, _values: Any) -> None:
         pass
 
     def reset(self) -> None:
         pass
 
 
-def build_blocks(
+def build_device_blocks(
+    holding_registers: dict[int, dict[str, int]],
+    input_registers: dict[int, dict[str, int]],
     default_value: int = 0,
     seed: Optional[int] = None,
 ) -> tuple[DynamicRegisterBlock, DynamicRegisterBlock]:
-    from app.mock_data import HOLDING_REGISTERS, INPUT_REGISTERS
-
     rng = random.Random(seed)
-    hr = DynamicRegisterBlock(HOLDING_REGISTERS, default_value, rng, "holding")
-    ir = DynamicRegisterBlock(INPUT_REGISTERS, default_value, rng, "input")
+    hr = DynamicRegisterBlock(holding_registers, default_value, rng, "holding")
+    ir = DynamicRegisterBlock(input_registers, default_value, rng, "input")
     return hr, ir
