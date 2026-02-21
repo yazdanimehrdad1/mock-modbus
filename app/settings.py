@@ -1,17 +1,19 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Optional
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    server_mode: Literal["aggregator", "per_device"] = "aggregator"
-
-    # Used in aggregator mode (all devices share one host/port)
+    # Enable aggregator mode: all devices on one shared host/port, addressed by unit_id
+    aggregator_enabled: bool = True
     modbus_host: str = "0.0.0.0"
     modbus_port: int = 502
+
+    # Enable per-device mode: each device gets its own TCP server (host/port from device file)
+    per_device_enabled: bool = False
 
     default_register_value: int = 0
     log_level: str = "INFO"

@@ -81,17 +81,26 @@ async def run_server() -> None:
     )
 
     logger.info("Configuration:")
-    logger.info("  server_mode   = %s", settings.server_mode)
-    logger.info("  devices       = %d", len(DEVICES))
-    logger.info("  default_value = %d", settings.default_register_value)
-    logger.info("  random_seed   = %s", settings.random_seed)
+    logger.info("  aggregator_enabled  = %s", settings.aggregator_enabled)
+    logger.info("  per_device_enabled  = %s", settings.per_device_enabled)
+    logger.info("  devices             = %d", len(DEVICES))
+    logger.info("  default_value       = %d", settings.default_register_value)
+    logger.info("  random_seed         = %s", settings.random_seed)
 
-    if settings.server_mode == "aggregator":
-        logger.info("  host          = %s", settings.modbus_host)
-        logger.info("  port          = %d", settings.modbus_port)
-        await _start_aggregator(settings)
-    else:
-        await _start_per_device(settings)
+    servers = []
+
+    if settings.aggregator_enabled:
+        logger.info("  aggregator host     = %s:%d", settings.modbus_host, settings.modbus_port)
+        servers.append(_start_aggregator(settings))
+
+    if settings.per_device_enabled:
+        servers.append(_start_per_device(settings))
+
+    if not servers:
+        logger.error("Nothing to start: set AGGREGATOR_ENABLED and/or PER_DEVICE_ENABLED.")
+        sys.exit(1)
+
+    await asyncio.gather(*servers)
 
 
 if __name__ == "__main__":
