@@ -4,13 +4,13 @@ import logging
 import random
 from typing import Any, Optional
 
-from pymodbus.datastore.store import BaseModbusDataBlock
+from pymodbus.datastore import ModbusSequentialDataBlock
 
 logger = logging.getLogger("mock_modbus")
 
 
-class DynamicRegisterBlock(BaseModbusDataBlock):
-    """A data block that generates random values on every read."""
+class DynamicRegisterBlock(ModbusSequentialDataBlock):
+    """Data block that generates random values within configured bounds on every read."""
 
     def __init__(
         self,
@@ -19,16 +19,18 @@ class DynamicRegisterBlock(BaseModbusDataBlock):
         rng: random.Random,
         label: str,
     ) -> None:
+        # Initialise parent with a single dummy slot; validate() is overridden
+        # so pymodbus never rejects an address that is in our metadata dict.
+        super().__init__(1, [default_value])
         self._metadata = metadata
         self._default = default_value
         self._rng = rng
         self._label = label
-        self.address = 0
-        self.default_value = default_value
-        self.values: dict[int, int] = {}
+
+    def validate(self, address: int, count: int = 1) -> bool:
+        return True
 
     def getValues(self, address: int, count: int = 1) -> list[int]:
-        logger.info("READ %s address=%d count=%d", self._label, address, count)
         result: list[int] = []
         for addr in range(address, address + count):
             entry = self._metadata.get(addr)
@@ -36,12 +38,10 @@ class DynamicRegisterBlock(BaseModbusDataBlock):
                 result.append(self._rng.randint(entry["min"], entry["max"]))
             else:
                 result.append(self._default)
+        logger.info("READ %s address=%d count=%d -> %s", self._label, address, count, result)
         return result
 
     def setValues(self, _address: int, _values: Any) -> None:
-        pass
-
-    def reset(self) -> None:
         pass
 
 
@@ -52,6 +52,6 @@ def build_device_blocks(
     seed: Optional[int] = None,
 ) -> tuple[DynamicRegisterBlock, DynamicRegisterBlock]:
     rng = random.Random(seed)
-    hr = DynamicRegisterBlock(holding_registers, default_value, rng, "holding")
-    ir = DynamicRegisterBlock(input_registers, default_value, rng, "input")
-    return hr, ir
+    holding_register = DynamicRegisterBlock(holding_registers, default_value, rng, "holding")
+    input_register = DynamicRegisterBlock(input_registers, default_value, rng, "input")
+    return holding_register, input_register

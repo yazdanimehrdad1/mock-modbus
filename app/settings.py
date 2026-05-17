@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     default_register_value: int = 0
     log_level: str = "INFO"
     random_seed: Optional[int] = None
+    # False (default): 1-based addressing — standard Modbus (Modbus Poll, most PLCs)
+    # True: 0-based addressing — use when clients send raw PDU addresses (e.g. pymodbus client)
+    zero_mode: bool = False
 
     model_config = {"env_prefix": ""}
 

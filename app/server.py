@@ -4,7 +4,7 @@ import asyncio
 import logging
 import sys
 
-from pymodbus.datastore import ModbusDeviceContext, ModbusServerContext
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 from pymodbus.server import StartAsyncTcpServer
 
 from app.datastore import build_device_blocks
@@ -16,19 +16,19 @@ logger = logging.getLogger("mock_modbus")
 
 async def _start_aggregator(settings: Settings) -> None:
     """One TCP server, all devices registered by their unit_id."""
-    device_contexts: dict[int, ModbusDeviceContext] = {}
+    device_contexts: dict[int, ModbusSlaveContext] = {}
 
     for device in DEVICES:
-        hr, ir = build_device_blocks(
+        holding_register_block, input_register_block = build_device_blocks(
             device.holding_registers,
             device.input_registers,
             default_value=settings.default_register_value,
             seed=settings.random_seed,
         )
-        device_contexts[device.unit_id] = ModbusDeviceContext(hr=hr, ir=ir)
+        device_contexts[device.unit_id] = ModbusSlaveContext(hr=holding_register_block, ir=input_register_block, zero_mode=settings.zero_mode)
         logger.info("  Registered %-12s unit_id=%d", device.name, device.unit_id)
 
-    context = ModbusServerContext(devices=device_contexts, single=False)
+    context = ModbusServerContext(slaves=device_contexts, single=False)
 
     logger.info(
         "Starting aggregator server on %s:%d (%d device(s))",
@@ -47,14 +47,14 @@ async def _start_per_device(settings: Settings) -> None:
     servers = []
 
     for device in DEVICES:
-        hr, ir = build_device_blocks(
+        holding_register_block, input_register_block = build_device_blocks(
             device.holding_registers,
             device.input_registers,
             default_value=settings.default_register_value,
             seed=settings.random_seed,
         )
         context = ModbusServerContext(
-            devices={device.unit_id: ModbusDeviceContext(hr=hr, ir=ir)},
+            slaves={device.unit_id: ModbusSlaveContext(hr=holding_register_block, ir=input_register_block, zero_mode=settings.zero_mode)},
             single=False,
         )
         logger.info(
@@ -86,6 +86,7 @@ async def run_server() -> None:
     logger.info("  devices             = %d", len(DEVICES))
     logger.info("  default_value       = %d", settings.default_register_value)
     logger.info("  random_seed         = %s", settings.random_seed)
+    logger.info("  zero_mode           = %s", settings.zero_mode)
 
     servers = []
 

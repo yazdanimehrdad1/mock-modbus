@@ -95,10 +95,10 @@ def main() -> None:
 
     # --- Holding register tests ---
     holding_tests = [
-        (0, 2, "HR 0-1 (voltage/percentage)"),
-        (10, 1, "HR 10 (power 1000-2000)"),
-        (200, 1, "HR 200 (full range)"),
-        (1000, 1, "HR 1000 (voltage 200-240)"),
+        (0, 2, "holding_register 0-1 (voltage/percentage)"),
+        (10, 1, "holding_register 10 (power 1000-2000)"),
+        (200, 1, "holding_register 200 (full range)"),
+        (1000, 1, "holding_register 1000 (voltage 200-240)"),
     ]
 
     print("=== Holding Registers (FC 0x03) ===")
@@ -114,9 +114,9 @@ def main() -> None:
 
     # --- Input register tests ---
     input_tests = [
-        (0, 1, "IR 0 (range 300-500)"),
-        (50, 1, "IR 50 (range 100-200)"),
-        (2000, 1, "IR 2000 (range 0-1000)"),
+        (0, 1, "input_register 0 (range 300-500)"),
+        (50, 1, "input_register 50 (range 100-200)"),
+        (2000, 1, "input_register 2000 (range 0-1000)"),
     ]
 
     print("\n=== Input Registers (FC 0x04) ===")
@@ -135,10 +135,10 @@ def main() -> None:
     print("\n=== Edge Cases ===")
     try:
         values = read_holding_registers(sock, 9999, 1, args.unit_id, tx_id)
-        print(f"  PASS  Unmapped HR 9999 (expect default): {values}")
+        print(f"  PASS  Unmapped holding_register 9999 (expect default): {values}")
         passed += 1
     except Exception as e:
-        print(f"  FAIL  Unmapped HR 9999: {e}")
+        print(f"  FAIL  Unmapped holding_register 9999: {e}")
         failed += 1
 
     sock.close()
