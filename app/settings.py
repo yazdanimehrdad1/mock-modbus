@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # Enable per-device mode: each device gets its own TCP server (host/port from device file)
     per_device_enabled: bool = False
 
-    default_register_value: int = 0
+    default_register_value: int = 1000
     log_level: str = "INFO"
     random_seed: Optional[int] = None
     # False (default): 1-based addressing — standard Modbus (Modbus Poll, most PLCs)
