@@ -13,9 +13,10 @@ services:
       # - RANDOM_SEED=1234  # uncomment for deterministic mode
       # - ZERO_MODE=true   # set true for 0-based clients (pymodbus); false (default) for standard Modbus Poll/PLCs
     networks:
-      - pae-shared-network
+      - shared-network
     restart: unless-stopped
 
 networks:
-  pae-shared-network:
+  shared-network:
+    name: pae-shared-network
     external: true

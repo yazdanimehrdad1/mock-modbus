@@ -1,7 +1,7 @@
 .PHONY: network build up down restart logs clean
 
 network:
-	docker network inspect pae-shared-network >nul 2>&1 || docker network create pae-shared-network
+	docker network inspect shared-network >nul 2>&1 || docker network create shared-network
 
 build: network
 	docker compose build
