@@ -6,6 +6,8 @@ from typing import Any, Optional
 
 from pymodbus.datastore import ModbusSequentialDataBlock
 
+from app.models import RegisterSpec
+
 logger = logging.getLogger("mock_modbus")
 
 
@@ -14,7 +16,7 @@ class DynamicRegisterBlock(ModbusSequentialDataBlock):
 
     def __init__(
         self,
-        metadata: dict[int, dict[str, int]],
+        metadata: dict[int, RegisterSpec],
         default_value: int,
         rng: random.Random,
         label: str,
@@ -34,10 +36,13 @@ class DynamicRegisterBlock(ModbusSequentialDataBlock):
         result: list[int] = []
         for addr in range(address, address + count):
             entry = self._metadata.get(addr)
-            if entry is not None:
-                result.append(self._rng.randint(entry["min"], entry["max"]))
-            else:
+            if entry is None:
                 result.append(self._default)
+                continue
+            lo, hi = entry.min, entry.max
+            # Modbus registers are unsigned 16-bit on the wire — wrap signed
+            # (int16) values to their two's-complement uint16 representation.
+            result.append(self._rng.randint(lo, hi) & 0xFFFF)
         logger.info("READ %s address=%d count=%d -> %s", self._label, address, count, result)
         return result
 
@@ -46,8 +51,8 @@ class DynamicRegisterBlock(ModbusSequentialDataBlock):
 
 
 def build_device_blocks(
-    holding_registers: dict[int, dict[str, int]],
-    input_registers: dict[int, dict[str, int]],
+    holding_registers: dict[int, RegisterSpec],
+    input_registers: dict[int, RegisterSpec],
     default_value: int = 0,
     seed: Optional[int] = None,
 ) -> tuple[DynamicRegisterBlock, DynamicRegisterBlock]:

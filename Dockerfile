@@ -5,7 +5,8 @@ RUN groupadd --gid 1000 modbus && \
 
 WORKDIR /opt/mock-modbus
 
-RUN pip install --no-cache-dir "pymodbus[serial]>=3.5,<3.7" pydantic>=2.0 pydantic-settings>=2.0
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ app/
 
